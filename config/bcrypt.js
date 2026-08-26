@@ -10,7 +10,7 @@ export async function hashPassword(password) {
     }
 }
 
-export async function comparePassword(plainPassword, hashedPassword){
+export async function verifyPassword(plainPassword, hashedPassword){
     try {
         const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
         return isMatch;

@@ -1,5 +1,8 @@
 import { ApiResponse } from '../utils/respatterns.js';
 import userModel from '../models/user.js';
+import { verifyPassword, hashPassword } from '../config/bcrypt.js';
+
+
 
 
 export async function getAllUsers(req, res, next) {
@@ -33,26 +36,26 @@ export async function registerUser(req, res, next) {
 
         res.status(201).json(new ApiResponse(
             true, user, "User registered successfully"
-        )); 
+        ));
     } catch (error) {
         res.status(500).json(new ApiResponse(
             false, null, "Internal server error"
         ));
-    } 
-} 
+    }
+}
 
 export async function updateUser(req, res, next) {
     try {
         const { id } = req.params;
-        const { name, phone, email ,address, gender} = req.body;
+        const { name, phone, email, address, gender } = req.body;
 
-        if (!(name && phone && email && address && gender)){
+        if (!(name && phone && email && address && gender)) {
             return res.status(400).json(new ApiResponse(
                 false, null, "All field is required to update"
             ));
         }
 
-        let user = await userModel.findByIdAndUpdate(id ,{ name, phone, email ,address, gender}, { returnDocument: "after" });
+        let user = await userModel.findByIdAndUpdate(id, { name, phone, email, address, gender }, { returnDocument: "after" });
 
         if (!user) {
             return res.status(404).json(new ApiResponse(
@@ -71,7 +74,7 @@ export async function updateUser(req, res, next) {
 
 export async function deleteUser(req, res, next) {
     try {
-        const { id } = req.params;  
+        const { id } = req.params;
 
         let user = await userModel.findByIdAndDelete(id);
 
@@ -79,7 +82,7 @@ export async function deleteUser(req, res, next) {
             return res.status(404).json(new ApiResponse(
                 false, null, "User not found"
             ));
-        }   
+        }
 
         res.status(200).json(new ApiResponse(
             true, user, "User deleted successfully"
@@ -88,7 +91,60 @@ export async function deleteUser(req, res, next) {
     } catch (error) {
         res.status(500).json(new ApiResponse(
             false, null, "Internal server error"
-        )); 
+        ));
     }
 }
 
+export async function changePassword(req, res, next) {
+
+    try {
+
+        const { oldpassword, newpassword } = req.body;
+
+        if (!(oldpassword && newpassword)) {
+            return res.status(400).json(new ApiResponse(
+                false, null, "Old password and new password are required"
+            ));
+        }
+
+        let user = await userModel
+            .findOne({
+                _id: req.user._id,
+                isDeleted: false
+            
+            })
+            .select("+password");
+
+
+        if (!user) {
+            return res.status(404).json(new ApiResponse(
+                false, null, "User not found"
+            ));
+        }
+
+        const isMatch = await verifyPassword(oldpassword, user.password);
+
+        if (!isMatch) {
+            return res.status(400).json(new ApiResponse(
+                false, null, "Old password is incorrect"
+            ));
+        }
+
+        let hashedPassword = await hashPassword(newpassword);
+
+        let updatedUser = await userModel.findByIdAndUpdate(req.user._id, { password: hashedPassword }, { returnDocument: "after" });
+
+        res.status(200).json(new ApiResponse(
+            true, updatedUser, "Password changed successfully"
+        ));
+    }catch (error) { 
+
+    console.log("CHANGE PASSWORD ERROR:", error);
+
+    res.status(500).json(new ApiResponse( 
+        false, null, error.message
+    )); 
+}
+    
+
+}
