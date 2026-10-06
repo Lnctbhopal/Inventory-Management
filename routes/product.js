@@ -5,7 +5,9 @@ import allowRoles from "../middleware/allowRole.js";
 
 import {
     getAllProducts,
-    createProduct
+    createProduct ,
+    updateProduct ,
+    deleteProduct
 } from "../Controllers/productController.js";
 
 const router = express.Router();
@@ -22,6 +24,20 @@ router.post(
     authMiddleware,
     allowRoles("admin"),
     createProduct
+);
+
+router.put(
+    "/",
+    authMiddleware,
+    allowRoles("admin"),
+    updateProduct
+);
+
+router.delete(
+    "/",
+    authMiddleware,
+    allowRoles("admin"),
+    deleteProduct
 );
 
 export default router;

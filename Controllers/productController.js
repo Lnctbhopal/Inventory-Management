@@ -90,3 +90,89 @@ export async function createProduct(req, res, next) {
         next(error);
     }
 }
+
+export async function updateProduct(req, res, next) {
+    try {
+        const {
+            id,
+            _id,
+            name,
+            sku,
+            description,
+            category,
+            brand,
+            price,
+            purchasePrice,
+            stock,
+            minimumStock,
+            unit,
+            supplier,
+            images,
+            isActive
+        } = req.body;
+        const productId = id || _id;
+
+        if (!productId) {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, null, "Product id is required"));
+        }
+
+        const updates = {
+            name,
+            sku,
+            description,
+            category,
+            brand,
+            price,
+            purchasePrice,
+            stock,
+            minimumStock,
+            unit,
+            supplier,
+            images,
+            isActive
+        };
+        for (const key of Object.keys(updates)) {
+            if (updates[key] === undefined) {
+                delete updates[key];
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, null, "At least one product field is required"));
+        }
+
+        const product = await productModel.findByIdAndUpdate(
+            productId,
+            updates,
+            { new: true, runValidators: true }
+        );
+
+        if (!product) {
+            return res
+                .status(404)
+                .json(new ApiResponse(404, null, "Product not found"));
+        }
+
+        return res
+            .status(200)
+            .json(new ApiResponse(200, product, "Product updated successfully"));
+    } catch (error) {
+        if (error.name === "ValidationError" || error.name === "CastError") {
+            return res
+                .status(400)
+                .json(new ApiResponse(400, null, error.message));
+        }
+
+        if (error.code === 11000) {
+            return res
+                .status(409)
+                .json(new ApiResponse(409, null, "A product with this SKU already exists"));
+        }
+
+        next(error);
+    }
+}
