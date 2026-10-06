@@ -19,13 +19,13 @@ export  default async function authMiddleware(req, res, next) {
             ));
         }
 
-       const user = await userModel.findOne({ _id: decoded.id,role : decoded.role ,isDeleted: false });
-       if (!user) {
+       const userDocument = await userModel.findOne({ _id: decoded.id,role : decoded.role ,isDeleted: false });
+       if (!userDocument) {
             return res.status(401).json(new ApiResponse(
                 false, null, "Unauthorized: User not found"
             ));
         }
-        user = user.toObject();
+        const user = userDocument.toObject();
         delete user.password;
         delete user.isDeleted;
         delete user.__v;

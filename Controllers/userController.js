@@ -32,15 +32,34 @@ export async function registerUser(req, res, next) {
     try {
         const { name, phone, email, password } = req.body;
 
-        const user = await userModel.create({ name, phone, email, password });
+        if (![name, phone, email, password].every(
+            (value) => typeof value === "string" && value.trim()
+        )) {
+            return res.status(400).json(new ApiResponse(
+                false, null, "Name, phone, email, and password are required"
+            ));
+        }
+
+        const hash = await hashPassword(password);
+        const user = await userModel.create({ name, phone, email, password: hash });
+        const userResponse = user.toObject();
+        delete userResponse.password;
 
         res.status(201).json(new ApiResponse(
-            true, user, "User registered successfully"
+            true, userResponse, "User registered successfully"
         ));
     } catch (error) {
-        res.status(500).json(new ApiResponse(
-            false, null, "Internal server error"
-        ));
+        if (error.name === "ValidationError") {
+            return res.status(400).json(new ApiResponse(
+                false, null, error.message
+            ));
+        }
+        if (error.code === 11000) {
+            return res.status(409).json(new ApiResponse(
+                false, null, "Email or phone number is already registered"
+            ));
+        }
+        next(error);
     }
 }
 
@@ -148,3 +167,88 @@ export async function changePassword(req, res, next) {
     
 
 }
+
+
+export async function toggleUserStatus(req, res, next) {
+    try {
+        const { id } = req.body;
+
+        let user = await usermodel.findById(id);
+
+        if(!user) {
+            return res.status(404).json(new ApiResponse(
+                false, null, "User not found"
+            ));
+        }
+
+        user.isActive = !user.isActive;
+
+        await user.save();  
+
+    } catch (error) {
+        res.status(500).json(new ApiResponse(
+            false, null, "Internal server error"
+        ));
+    }
+}
+
+
+export async function userProfile(req, res, next) {
+    try {
+        const profile = req.file;
+
+        if (!profile) {
+            return res.status(400).json(
+                new ApiResponse(
+                    false,
+                    null,
+                    "Profile image is required"
+                )
+            );
+        }
+
+        if (!req.user?._id) {
+            return res.status(401).json(
+                new ApiResponse(false, null, "Unauthorized")
+            );
+        }
+
+        const profilepath =
+            `${req.protocol}://${req.get("host")}/uploads/${profile.filename}`;
+
+        const user = await userModel.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json(
+                new ApiResponse(false, null, "User not found")
+            );
+        }
+
+        // Save the profile image
+        user.profileImage = profilepath;
+        await user.save();
+
+        return res.status(200).json(
+            new ApiResponse(
+                true,
+                {
+                    profileImage: user.profileImage
+                },
+                "Profile image uploaded successfully"
+            )
+        );
+
+    } catch (error) {
+        console.error("Profile upload error:", error);
+
+        return res.status(500).json(
+            new ApiResponse(
+                false,
+                null,
+                "Internal server error"
+            )
+        );
+    }
+}
+
+

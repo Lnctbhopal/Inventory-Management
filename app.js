@@ -5,8 +5,11 @@ import logger from "morgan";
 import path from "path";
 
 import { errorHandler } from "./middleware/errorhandler.js";
+
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
+import productRouter from "./routes/product.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 
@@ -34,7 +37,7 @@ const uploadsPath = path.join(process.cwd(), "uploads");
 
 console.log("Uploads folder:", uploadsPath);
 
-app.use("/uploads", express.static(uploadsPath));
+app.use("/uploads", express.static('uploads'));
 
 // ======================================================
 // ROUTES
@@ -42,6 +45,8 @@ app.use("/uploads", express.static(uploadsPath));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/auth", authRouter);
+app.use("/products", productRouter);
 // ======================================================
 // 404 HANDLER
 // ======================================================

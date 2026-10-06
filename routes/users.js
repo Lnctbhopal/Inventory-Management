@@ -12,13 +12,13 @@ router.get("/", getAllUsers);
 
 router.post("/register",registerUser);
 
-router.patch("/:id", updateUser);
+router.patch("/:id", authMiddleware, updateUser);
 
-router.delete("/:id",deleteUser); 
+router.delete("/:id",authMiddleware, deleteUser);
 
 router.post("/change-password",authMiddleware, changePassword);
 
-router.post("/", toggleUserStatus); 
+router.post("/", authMiddleware, toggleUserStatus);
 
 
 router.patch( "/profile/:id", authMiddleware ,userUpload.single("image"), userProfile);

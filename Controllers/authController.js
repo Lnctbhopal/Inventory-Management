@@ -12,7 +12,7 @@ export default async function login(req, res, next) {
             ));
         }
 
-        const user = await userModel.findOne({ email, isDeleted: false });
+        const user = await userModel.findOne({ email, isDeleted: false }).select("+password");
         if (!user) {
             return res.status(401).json(new ApiResponse(
                 false, null, "user not found"
@@ -33,20 +33,18 @@ export default async function login(req, res, next) {
             email: user.email
         });
 
-        user = user.toObject();
-        delete user.password;
-        delete user.isDeleted;
-        delete user.__v;
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        delete userResponse.isDeleted;
+        delete userResponse.__v;
 
-        user.token = token;
+        userResponse.token = token;
 
         res.status(200).json(new ApiResponse(
-            true, user, "Login successful"
+            true, userResponse, "Login successful"
         ));
         
     } catch (error) {
-        return res.status(500).json(new ApiResponse(
-            false, null, "Internal server error"
-        ));
+        next(error);
     }
 }
