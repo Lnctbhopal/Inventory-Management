@@ -16,6 +16,18 @@ const productSchema = new mongoose.Schema(
       uppercase: true,
     },
 
+    barcode: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    barcodeImage: {
+      type: String,
+      trim: true
+    },
+
     description: {
       type: String,
       trim: true,
