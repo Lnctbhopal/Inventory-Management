@@ -2,7 +2,6 @@ import productModel from "../models/product.js";
 import { ApiResponse } from "../utils/respatterns.js";
 import bwip from "bwip-js";
 
-
 export async function getAllProducts(req, res, next) {
     try {
 
@@ -190,7 +189,6 @@ export async function createProduct(req, res, next) {
     }
 }
 
-
 export async function updateProduct(req, res, next) {
     try {
 
@@ -336,7 +334,6 @@ export async function searchProduct(req, res, next) {
             );
     }
 }
-
 
 export async function scanProduct(req, res, next) {
     try {

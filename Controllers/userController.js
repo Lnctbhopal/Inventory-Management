@@ -3,8 +3,6 @@ import userModel from '../models/user.js';
 import { verifyPassword, hashPassword } from '../config/bcrypt.js';
 
 
-
-
 export async function getAllUsers(req, res, next) {
     try {
 

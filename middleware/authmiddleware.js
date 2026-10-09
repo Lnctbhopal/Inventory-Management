@@ -36,6 +36,17 @@ export  default async function authMiddleware(req, res, next) {
 
         
     } catch (error) {
+        if (
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError" ||
+            error.name === "NotBeforeError"
+        ) {
+            return res.status(401).json(new ApiResponse(
+                false, null, "Unauthorized: Invalid or expired token"
+            ));
+        }
+
+        console.error("Authentication middleware error:", error);
         return res.status(500).json(new ApiResponse(
             false, null, "Internal server error"
         ));

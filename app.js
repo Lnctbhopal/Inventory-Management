@@ -9,6 +9,8 @@ import { errorHandler } from "./middleware/errorhandler.js";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import productRouter from "./routes/product.js";
+import stockRouter from "./routes/stock.js";
+import supplierRouter from "./routes/Supplier.js";
 import authRouter from "./routes/auth.js";
 
 const app = express();
@@ -45,8 +47,10 @@ app.use("/uploads", express.static('uploads'));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/suppliers", supplierRouter);  
 app.use("/auth", authRouter);
 app.use("/products", productRouter);
+app.use("/stocks", stockRouter);
 // ======================================================
 // 404 HANDLER
 // ======================================================

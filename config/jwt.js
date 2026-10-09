@@ -13,10 +13,9 @@ export async function generateToken(payload) {
 }
 
 export async function verifyToken(token) {
-    try {
-        const  decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return decoded;         
-    }   catch (error) { 
-        throw new Error("Error verifying token");
-    }   
+    if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not configured");
+    }
+
+    return jwt.verify(token, process.env.JWT_SECRET);
 }
